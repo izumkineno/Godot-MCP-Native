@@ -10,6 +10,7 @@ func _init() -> void:
 
 func _build_classifications() -> void:
 	var classifications: Array[Dictionary] = [
+		{"name": "mcp_start_here", "category": "supplementary", "group": "Guide"},
 		{"name": "create_node", "category": "core", "group": "Node-Write"},
 		{"name": "delete_node", "category": "core", "group": "Node-Write"},
 		{"name": "update_node_property", "category": "core", "group": "Node-Write"},

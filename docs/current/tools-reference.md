@@ -5,29 +5,56 @@
 ## 目录
 
 1. [工具概述](#工具概述)
-2. [Node Tools](#node-tools)
-3. [Script Tools](#script-tools)
-4. [Scene Tools](#scene-tools)
-5. [Editor Tools](#editor-tools)
-6. [Debug Tools](#debug-tools)
-7. [Project Tools](#project-tools)
-8. [通用数据类型](#通用数据类型)
-9. [错误处理](#错误处理)
+2. [Guide Tools](#guide-tools)
+3. [Node Tools](#node-tools)
+4. [Script Tools](#script-tools)
+5. [Scene Tools](#scene-tools)
+6. [Editor Tools](#editor-tools)
+7. [Debug Tools](#debug-tools)
+8. [Project Tools](#project-tools)
+9. [通用数据类型](#通用数据类型)
+10. [错误处理](#错误处理)
 
 ---
 
 ## 工具概述
 
-Godot MCP Native 实现了 **155 个工具**，分为 6 大类（含核心和补充工具）：
+Godot MCP Native 实现了 **156 个工具**，分为 6 大类和 1 个 Guide 引导入口：
 
 | 类别 | 核心工具 | 补充工具 | 总计 | 源文件 | 用途 |
 |------|----------|----------|------|--------|------|
+| [Guide](#guide-tools) | 0 | 1 | 1 | `guide_tools_native.gd` | 首读入口，帮助 agent 先选开发、调试、运行时或健康检查路径 |
 | [Node Tools](#node-tools) | 9 | 11 | 20 | `node_tools_native.gd` | 节点管理（创建、删除、修改属性、复制、移动、重命名、信号、组） |
 | [Script Tools](#script-tools) | 7 | 7 | 14 | `script_tools_native.gd` | 脚本管理（读取、创建、修改、分析、附加、验证、搜索、符号索引） |
 | [Scene Tools](#scene-tools) | 4 | 4 | 8 | `scene_tools_native.gd` | 场景管理（创建、保存、打开、列出） |
 | [Editor Tools](#editor-tools) | 4 | 12 | 16 | `editor_tools_native.gd` | 编辑器操作（运行、停止、状态、截图、信号、导出、选择） |
 | [Debug Tools](#debug-tools) | 3 | 68 | 71 | `debug_tools_native.gd` | 调试和运行时（日志、断点、栈帧、Profiler、运行时探针、动画、音频、着色器、瓦片地图） |
 | [Project Tools](#project-tools) | 3 | 23 | 26 | `project_tools_native.gd` | 项目配置（信息、设置、测试、输入映射、自动加载、全局类、资源诊断） |
+
+## Guide Tools
+
+`mcp_start_here` 是一个默认启用的首读入口。建议 agent 在开始浏览其他工具前先读取它，然后再决定调用开发、调试、运行时或健康检查工具。它属于展示层引导入口，不改变底层核心/补充分类模型。
+
+### 1. mcp_start_here
+
+读取首读指南，返回当前 topic 对应的推荐工具和选择规则。
+
+**主题**：
+- `overview`
+- `development`
+- `debugging`
+- `runtime`
+- `health`
+
+**返回值**：
+- `topic`
+- `recommended_section`
+- `task_echo`
+- `sections`
+- `summary`
+
+**注解**：`readOnlyHint=true`, `destructiveHint=false`, `idempotentHint=true`, `openWorldHint=false`
+**默认启用**：通过注册参数 `enabled_by_default=true`
 
 ### Vibe Coding / 免打扰模式
 
@@ -4015,7 +4042,7 @@ Continue：恢复执行。
 
 ## 总结
 
-本手册详细说明了 Godot MCP Native 项目的所有核心工具及部分补充工具。项目共 **155 个工具**（30 核心 + 125 补充），所有工具均可通过 MCP 工具管理面板按分组动态启用/禁用。补充工具（`*-Advanced` 分组）默认不启用，需在工具管理面板中手动开启。
+本手册详细说明了 Godot MCP Native 项目的所有核心工具及部分补充工具。项目共 **156 个工具**（30 核心 + 126 补充），所有工具均可通过 MCP 工具管理面板按分组动态启用/禁用。补充工具（`*-Advanced` 分组）默认不启用；`mcp_start_here` 作为首读入口默认启用，方便 agent 先读工具指南再决定下一步调用。
 
 **提示**：
 - 使用 `tools/list` 方法获取所有工具的实时列表和完整 JSON Schema

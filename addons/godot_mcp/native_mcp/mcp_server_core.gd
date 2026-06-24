@@ -60,6 +60,7 @@ var _tools: Dictionary = {}  # String -> MCPTool
 var _resources: Dictionary = {}  # String -> MCPResource
 var _prompts: Dictionary = {}  # String -> MCPPrompt
 var _tool_list_dirty: bool = false  # 工具列表变更标记
+var _tool_registration_counter: int = 0
 
 var _classifier = null  # MCPToolClassifier (lazy-loaded for GUT CLI compat)
 var _state_manager = null  # MCPToolStateManager (lazy-loaded for GUT CLI compat)
@@ -364,11 +365,11 @@ func _handle_tools_list(message: Dictionary) -> Dictionary:
 	
 	# 构建工具列表（根据mcp-builder，包含annotations和outputSchema）
 	var tools_list: Array[Dictionary] = []
-	
-	for tool_name in _tools:
-		var tool: MCPTypes.MCPTool = _tools[tool_name]
-		if tool and tool.is_valid() and tool.enabled:
-			tools_list.append(tool.to_dict())
+	var tools_to_list: Array = _get_sorted_tools()
+	for tool in tools_to_list:
+		if not tool.enabled:
+			continue
+		tools_list.append(tool.to_dict())
 	
 	var result: Dictionary = {"tools": tools_list}
 	var response: Dictionary = MCPTypes.create_response(id, result)
@@ -584,7 +585,9 @@ func register_tool(name: String, description: String,
 				  output_schema: Dictionary = {}, 
 				  annotations: Dictionary = {},
 				  category: String = "core",
-				  group: String = "") -> void:
+				  group: String = "",
+				  list_priority: int = 0,
+				  enabled_by_default: bool = false) -> void:
 	var tool: MCPTypes.MCPTool = MCPTypes.MCPTool.new()
 	tool.name = name
 	tool.description = description
@@ -594,7 +597,10 @@ func register_tool(name: String, description: String,
 	tool.callable = callable
 	tool.category = category
 	tool.group = group
-	tool.enabled = (category == "core")
+	tool.list_priority = list_priority
+	tool.registration_index = _tool_registration_counter
+	_tool_registration_counter += 1
+	tool.enabled = _should_enable_tool_by_default(category, enabled_by_default)
 	
 	if not tool.is_valid():
 		var reason: String = "unknown"
@@ -610,6 +616,9 @@ func register_tool(name: String, description: String,
 	
 	_tools[name] = tool
 	_log_info("Tool registered: " + name)
+
+func _should_enable_tool_by_default(category: String, enabled_by_default: bool) -> bool:
+	return enabled_by_default or category == "core"
 
 func unregister_tool(name: String) -> void:
 	if _tools.has(name):
@@ -630,17 +639,30 @@ func get_resources_count() -> int:
 
 func get_registered_tools() -> Array:
 	var tools_info: Array = []
+	for tool: MCPTypes.MCPTool in _get_sorted_tools():
+		tools_info.append({
+			"name": tool.name,
+			"description": tool.description,
+			"enabled": tool.enabled,
+			"category": tool.category,
+			"group": tool.group
+		})
+	return tools_info
+
+func _get_sorted_tools() -> Array:
+	var tools: Array = []
 	for tool_name in _tools:
 		var tool: MCPTypes.MCPTool = _tools[tool_name]
 		if tool and tool.is_valid():
-			tools_info.append({
-				"name": tool.name,
-				"description": tool.description,
-				"enabled": tool.enabled,
-				"category": tool.category,
-				"group": tool.group
-			})
-	return tools_info
+			tools.append(tool)
+	tools.sort_custom(func(a: MCPTypes.MCPTool, b: MCPTypes.MCPTool) -> bool:
+		if a.list_priority != b.list_priority:
+			return a.list_priority < b.list_priority
+		if a.registration_index != b.registration_index:
+			return a.registration_index < b.registration_index
+		return a.name < b.name
+	)
+	return tools
 
 func set_tool_enabled(tool_name: String, enabled: bool) -> void:
 	if _tools.has(tool_name):

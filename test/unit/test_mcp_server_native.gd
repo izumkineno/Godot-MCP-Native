@@ -115,6 +115,10 @@ func test_has_autoload_registration_methods():
 	assert_true(method_names.has("_ensure_runtime_probe_autoload"), "Should have _ensure_runtime_probe_autoload method")
 	assert_true(method_names.has("_remove_runtime_probe_autoload"), "Should have _remove_runtime_probe_autoload method")
 
+func test_registers_guide_tool_module():
+	var source_code: String = _plugin_script.source_code
+	assert_true(source_code.contains("GuideToolsNative"), "Plugin should register the guide tool module")
+
 func test_autoload_registered_in_enter_tree():
 	var methods: Array = _plugin_script.get_script_method_list()
 	var method_names: Array = methods.map(func(m): return m["name"])

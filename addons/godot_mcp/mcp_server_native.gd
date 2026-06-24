@@ -100,6 +100,7 @@ var _tool_instances: Dictionary = {}
 var _debugger_bridge: MCPDebuggerBridge = null
 
 const TOOL_SCRIPT_PATHS: Dictionary = {
+	"GuideToolsNative": "res://addons/godot_mcp/tools/guide_tools_native.gd",
 	"NodeToolsNative": "res://addons/godot_mcp/tools/node_tools_native.gd",
 	"ScriptToolsNative": "res://addons/godot_mcp/tools/script_tools_native.gd",
 	"SceneToolsNative": "res://addons/godot_mcp/tools/scene_tools_native.gd",
@@ -555,27 +556,26 @@ func _register_all_tools() -> void:
 		_log_error("MCP Server instance not available")
 		return
 	
+	_register_tool_module("GuideToolsNative", _instantiate_script("res://addons/godot_mcp/tools/guide_tools_native.gd"))
 	for module_name in TOOL_SCRIPT_PATHS.keys():
+		if module_name == "GuideToolsNative":
+			continue
 		var instance: Variant = _instantiate_script(str(TOOL_SCRIPT_PATHS[module_name]))
 		if not instance:
 			_log_error("Failed to instantiate tool module: " + str(module_name))
 			continue
 		_register_tool_module(str(module_name), instance)
-	
 	var total_tools: int = _native_server.get_tools_count()
 	_log_info("All MCP tools registered successfully. Total: " + str(total_tools))
 
 func _register_tool_module(module_name: String, instance: RefCounted) -> void:
 	if not instance:
 		return
-	
 	_tool_instances[module_name] = instance
 	var tools_before: int = _native_server.get_tools_count() if _native_server and _native_server.has_method("get_tools_count") else -1
 	_log_info("Registering tool module: %s (before=%d)" % [module_name, tools_before])
-	
 	if instance.has_method("initialize"):
 		instance.initialize(_editor_interface)
-	
 	if instance.has_method("register_tools"):
 		instance.register_tools(_native_server)
 	var tools_after: int = _native_server.get_tools_count() if _native_server and _native_server.has_method("get_tools_count") else -1

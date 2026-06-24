@@ -1,6 +1,7 @@
 extends "res://addons/gut/test.gd"
 
 var _core: RefCounted = null
+var _async_tool_called: bool = false
 
 func before_each():
 	_core = load("res://addons/godot_mcp/native_mcp/mcp_server_core.gd").new()
@@ -38,6 +39,46 @@ func test_register_tool_default_category_and_group():
 		if t.get("name") == "test_tool":
 			assert_eq(t.get("category"), "core", "Default category should be 'core'")
 			assert_eq(t.get("group"), "", "Default group should be empty")
+
+func test_register_tool_default_enabled_flag():
+	_core.register_tool(
+		"mcp_start_here",
+		"Read first guide",
+		{"type": "object"},
+		func(args): return {"topic": "overview"},
+		{},
+		{},
+		"supplementary",
+		"Guide",
+		-100,
+		true
+	)
+	var tools: Array = _core.get_registered_tools()
+	for t in tools:
+		if t.get("name") == "mcp_start_here":
+			assert_true(t.get("enabled", false), "Guide tool should be enabled by default")
+			assert_eq(t.get("category"), "supplementary", "Guide tool should stay supplementary")
+			assert_eq(t.get("group"), "Guide", "Guide tool should be grouped under Guide")
+
+func test_tools_list_prioritizes_guide_tool_by_priority():
+	_core.register_tool(
+		"mcp_start_here",
+		"Read first guide",
+		{"type": "object"},
+		func(args): return {"topic": "overview"},
+		{},
+		{},
+		"supplementary",
+		"Guide",
+		-100,
+		true
+	)
+	_core.register_tool("other_tool", "A test tool", {"type": "object"}, func(args): return {"status": "ok"}, {}, {}, "core", "", 10)
+	var msg: Dictionary = {"id": 99, "method": "tools/list"}
+	var response: Dictionary = _core._handle_tools_list(msg)
+	var tools_list: Array = response.get("result", {}).get("tools", [])
+	assert_true(tools_list.size() >= 2, "Guide tool and other tool should both be listed")
+	assert_eq(tools_list[0].get("name", ""), "mcp_start_here", "Guide tool should appear first in tools/list")
 
 func test_unregister_tool():
 	_core.register_tool("test_tool", "A test tool", {"type": "object"}, func(args): return {"status": "ok"})
@@ -81,22 +122,22 @@ func test_clear_tool_list_dirty():
 
 func test_set_group_enabled_disables_group():
 	_core.register_tool("reload_project", "Reload", {"type": "object"}, func(args): return {}, {}, {}, "supplementary", "Editor-Advanced")
-	_core.register_tool("execute_editor_script", "Exec Editor Script", {"type": "object"}, func(args): return {}, {}, {}, "supplementary", "Editor-Advanced")
+	_core.register_tool("get_selected_nodes", "Get Selected Nodes", {"type": "object"}, func(args): return {}, {}, {}, "supplementary", "Editor-Advanced")
 	_core.set_group_enabled("Editor-Advanced", true)
 	var changed: int = _core.set_group_enabled("Editor-Advanced", false)
 	assert_true(changed >= 2, "Should change at least 2 tools: %d" % [changed])
 	var tools: Array = _core.get_registered_tools()
 	for t in tools:
-		if t["name"] in ["reload_project", "execute_editor_script"]:
+		if t["name"] in ["reload_project", "get_selected_nodes"]:
 			assert_false(t["enabled"], "Tool %s should be disabled" % t["name"])
 
 func test_set_group_enabled_re_enables_group():
 	_core.register_tool("reload_project", "Reload", {"type": "object"}, func(args): return {}, {}, {}, "supplementary", "Editor-Advanced")
-	_core.register_tool("execute_editor_script", "Exec Script", {"type": "object"}, func(args): return {}, {}, {}, "supplementary", "Editor-Advanced")
+	_core.register_tool("get_selected_nodes", "Get Selected Nodes", {"type": "object"}, func(args): return {}, {}, {}, "supplementary", "Editor-Advanced")
 	_core.set_group_enabled("Editor-Advanced", true)
 	var tools: Array = _core.get_registered_tools()
 	for t in tools:
-		if t["name"] in ["reload_project", "execute_editor_script"]:
+		if t["name"] in ["reload_project", "get_selected_nodes"]:
 			assert_true(t["enabled"], "Tool %s should be enabled" % t["name"])
 
 func test_set_group_enabled_unknown_group():
@@ -208,15 +249,11 @@ func test_sync_tool_call_with_await():
 	assert_eq(response.get("result", {}).get("content", [])[0].get("text"), '{"status":"ok"}', "Sync tool result should be preserved")
 
 func test_async_tool_call_with_await():
-	var tool_called: bool = false
-	_core.register_tool("async_tool", "An async tool", {"type": "object"}, func(args):
-		tool_called = true
-		await get_tree().process_frame
-		return {"status": "async_ok"}
-	)
+	_async_tool_called = false
+	_core.register_tool("async_tool", "An async tool", {"type": "object"}, Callable(self, "_async_test_tool"))
 	var msg: Dictionary = {"id": 11, "method": "tools/call", "params": {"name": "async_tool", "arguments": {}}}
 	var response: Dictionary = await _core._handle_tool_call(msg)
-	assert_true(tool_called, "Async tool should have been called")
+	assert_true(_async_tool_called, "Async tool should have been called")
 	assert_false(response.get("result", {}).get("isError", true), "Async tool via await should succeed")
 
 func test_handle_request_awaits_tool_call():
@@ -224,3 +261,8 @@ func test_handle_request_awaits_tool_call():
 	var msg: Dictionary = {"id": 12, "method": "tools/call", "params": {"name": "test_req_tool", "arguments": {}}}
 	var response: Dictionary = await _core._handle_request(msg)
 	assert_false(response.get("result", {}).get("isError", true), "handle_request should await tool_call successfully")
+
+func _async_test_tool(args: Dictionary) -> Dictionary:
+	_async_tool_called = true
+	await get_tree().process_frame
+	return {"status": "async_ok"}

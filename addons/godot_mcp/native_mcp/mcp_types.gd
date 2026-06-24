@@ -66,6 +66,8 @@ class MCPTool:
 	var enabled: bool = true
 	var category: String = "core"
 	var group: String = ""
+	var list_priority: int = 0
+	var registration_index: int = 0
 	
 	# 转换为Dictionary（用于JSON序列化）
 	func to_dict() -> Dictionary:
