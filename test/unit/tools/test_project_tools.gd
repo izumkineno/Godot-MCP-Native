@@ -140,3 +140,20 @@ func test_get_class_api_metadata_reports_missing_class():
 	var project_tools: RefCounted = load("res://addons/godot_mcp/tools/project_tools_native.gd").new()
 	var result: Dictionary = project_tools._tool_get_class_api_metadata({"class_name": "DefinitelyMissingClass123"})
 	assert_has(result, "error", "Missing classes should return an error payload")
+
+func test_fix_resource_uid_scans_filesystem_before_uid_lookup():
+	var source_code: String = load("res://addons/godot_mcp/tools/project_tools_native.gd").new().get_script().source_code
+	var scan_index: int = source_code.find("fs.scan()")
+	var lookup_index: int = source_code.find("ResourceSaver.get_resource_id_for_path(resource_path, true)")
+	assert_gt(scan_index, -1, "fix_resource_uid should scan the filesystem")
+	assert_gt(lookup_index, -1, "fix_resource_uid should attempt UID lookup")
+	assert_lt(scan_index, lookup_index, "Filesystem scan should happen before UID lookup")
+
+func test_is_likely_script_error_line_uses_only_keyword_signals():
+	var project_tools: RefCounted = load("res://addons/godot_mcp/tools/project_tools_native.gd").new()
+	assert_true(project_tools._is_likely_script_error_line("unexpected token"), "Unexpected should still be treated as error-like")
+	assert_true(project_tools._is_likely_script_error_line("expected identifier"), "Expected should still be treated as error-like")
+	assert_true(project_tools._is_likely_script_error_line("indent error"), "Indent-related lines should still be treated as error-like")
+	assert_false(project_tools._is_likely_script_error_line("var data = {"), "Multiline dictionary opens should not be treated as definite syntax errors")
+	assert_false(project_tools._is_likely_script_error_line("call_func("), "Multiline calls should not be treated as definite syntax errors")
+	assert_false(project_tools._is_likely_script_error_line("items,"), "Trailing commas should not be treated as definite syntax errors")

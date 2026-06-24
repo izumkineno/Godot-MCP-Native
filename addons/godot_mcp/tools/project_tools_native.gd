@@ -2015,23 +2015,32 @@ func _tool_fix_resource_uid(params: Dictionary) -> Dictionary:
 	if not FileAccess.file_exists(resource_path):
 		return {"error": "File not found: " + resource_path}
 
+	var editor_interface: EditorInterface = _get_editor_interface()
+	var fs: EditorFileSystem = null
+	if editor_interface:
+		fs = editor_interface.get_resource_filesystem()
+		if fs:
+			fs.scan()
+			fs.update_file(resource_path)
+
 	var previous_uid: String = ResourceUID.path_to_uid(resource_path)
 	if not previous_uid.begins_with("uid://"):
 		previous_uid = ""
 
 	var uid_id: int = ResourceSaver.get_resource_id_for_path(resource_path, true)
 	if uid_id == ResourceUID.INVALID_ID:
-		return {"error": "Failed to generate resource UID for: " + resource_path}
+		if fs:
+			fs.update_file(resource_path)
+		uid_id = ResourceSaver.get_resource_id_for_path(resource_path, true)
+	if uid_id == ResourceUID.INVALID_ID:
+		return {"error": "File not yet recognized by the editor filesystem. Run a filesystem scan and retry: " + resource_path}
 
 	var set_error: Error = ResourceSaver.set_uid(resource_path, uid_id)
 	if set_error != OK:
 		return {"error": "Failed to persist resource UID: " + error_string(set_error)}
 
-	var editor_interface: EditorInterface = _get_editor_interface()
-	if editor_interface:
-		var fs: EditorFileSystem = editor_interface.get_resource_filesystem()
-		if fs:
-			fs.update_file(resource_path)
+	if fs:
+		fs.update_file(resource_path)
 
 	var uid_text: String = ResourceUID.path_to_uid(resource_path)
 	return {
@@ -2701,8 +2710,6 @@ func _build_autoload_declarations() -> String:
 func _is_likely_script_error_line(line: String) -> bool:
 	var line_lower: String = line.to_lower()
 	if line_lower.contains("unexpected") or line_lower.contains("expected") or line_lower.contains("indent"):
-		return true
-	if line.ends_with("(") or line.ends_with(",") or line.count("\"") % 2 == 1:
 		return true
 	return false
 
