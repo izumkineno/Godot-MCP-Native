@@ -262,14 +262,17 @@ func _tool_run_project(params: Dictionary) -> Dictionary:
 		if not FileAccess.file_exists(scene_path):
 			return {"error": "Scene file not found: " + scene_path}
 		played_scene = scene_path
+		await _await_editor_idle_frame()
 		editor_interface.play_custom_scene(scene_path)
 	else:
 		var scene_root: Node = _get_user_scene_root()
 		if scene_root:
 			played_scene = scene_root.scene_file_path
+			await _await_editor_idle_frame()
 			editor_interface.play_current_scene()
 		else:
 			played_scene = String(ProjectSettings.get_setting("application/run/main_scene", ""))
+			await _await_editor_idle_frame()
 			editor_interface.play_main_scene()
 
 	# Verify the play actually launched a debuggable child. Without this guard a
@@ -309,6 +312,11 @@ func _tool_run_project(params: Dictionary) -> Dictionary:
 		"session_active": true,
 		"probe_ready": probe_ready
 	}
+
+func _await_editor_idle_frame() -> void:
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if tree:
+		await tree.process_frame
 
 # ============================================================================
 # stop_project - 停止运行

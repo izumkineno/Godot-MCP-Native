@@ -124,6 +124,11 @@ func test_editor_screenshot_uses_engine_main_loop():
 	assert_true(source_code.contains("Engine.get_main_loop()"), "get_editor_screenshot should use Engine.get_main_loop() instead of get_tree() for SceneTree access")
 	assert_false(source_code.contains("get_tree().process_frame"), "get_editor_screenshot should NOT use get_tree() which is unavailable on RefCounted")
 
+func test_run_project_waits_one_idle_frame_before_playback():
+	var source_code: String = _editor_tools.get_script().source_code
+	assert_true(source_code.contains("_await_editor_idle_frame()"), "run_project should wait for an idle frame before invoking play")
+	assert_true(source_code.contains("func _await_editor_idle_frame() -> void:"), "run_project should use a dedicated idle-frame helper")
+
 # --- Stop project wait logic tests ---
 
 func test_stop_project_waits_for_exit():
