@@ -77,8 +77,16 @@ func test_mcp_tool_to_dict():
 	tool.input_schema = {"type": "object"}
 	var d: Dictionary = tool.to_dict()
 	assert_eq(d["name"], "test_tool", "Dict should have correct name")
-	assert_eq(d["description"], "A test tool", "Dict should have correct description")
+	assert_true(str(d["description"]).begins_with(MCPTypes.MCPTool.START_HERE_NOTE), "Dict should prefix non-guide tool descriptions")
 	assert_has(d, "inputSchema", "Dict should have inputSchema")
+
+func test_mcp_tool_to_dict_keeps_guide_tool_description_plain():
+	var tool: MCPTypes.MCPTool = MCPTypes.MCPTool.new()
+	tool.name = "mcp_start_here"
+	tool.description = "A test tool"
+	tool.input_schema = {"type": "object"}
+	var d: Dictionary = tool.to_dict()
+	assert_eq(d["description"], "A test tool", "Guide tool description should stay plain")
 
 func test_mcp_tool_to_dict_with_output_schema():
 	var tool: MCPTypes.MCPTool = MCPTypes.MCPTool.new()

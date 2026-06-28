@@ -40,6 +40,14 @@ func test_register_tool_default_category_and_group():
 			assert_eq(t.get("category"), "core", "Default category should be 'core'")
 			assert_eq(t.get("group"), "", "Default group should be empty")
 
+func test_registered_tools_keep_group_and_category():
+	_core.register_tool("test_tool", "A test tool", {"type": "object"}, func(args): return {"status": "ok"}, {}, {}, "supplementary", "Editor-Advanced")
+	var tools: Array = _core.get_registered_tools()
+	for t in tools:
+		if t.get("name") == "test_tool":
+			assert_eq(t.get("category"), "supplementary", "Registered tools should preserve category")
+			assert_eq(t.get("group"), "Editor-Advanced", "Registered tools should preserve group")
+
 func test_register_tool_default_enabled_flag():
 	_core.register_tool(
 		"mcp_start_here",

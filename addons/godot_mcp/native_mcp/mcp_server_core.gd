@@ -640,13 +640,11 @@ func get_resources_count() -> int:
 func get_registered_tools() -> Array:
 	var tools_info: Array = []
 	for tool: MCPTypes.MCPTool in _get_sorted_tools():
-		tools_info.append({
-			"name": tool.name,
-			"description": tool.description,
-			"enabled": tool.enabled,
-			"category": tool.category,
-			"group": tool.group
-		})
+		var tool_info: Dictionary = tool.to_dict()
+		tool_info["enabled"] = tool.enabled
+		tool_info["category"] = tool.category
+		tool_info["group"] = tool.group
+		tools_info.append(tool_info)
 	return tools_info
 
 func _get_sorted_tools() -> Array:

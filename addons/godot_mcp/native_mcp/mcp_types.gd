@@ -57,6 +57,7 @@ enum LogLevel {
 # ============================================================================
 
 class MCPTool:
+	const START_HERE_NOTE: String = "First read mcp_start_here before using this tool."
 	var name: String = ""
 	var description: String = ""
 	var input_schema: Dictionary = {}
@@ -71,9 +72,12 @@ class MCPTool:
 	
 	# 转换为Dictionary（用于JSON序列化）
 	func to_dict() -> Dictionary:
+		var display_description: String = description
+		if name != "mcp_start_here" and not display_description.begins_with(START_HERE_NOTE):
+			display_description = START_HERE_NOTE + " " + display_description
 		var result: Dictionary = {
 			"name": name,
-			"description": description,
+			"description": display_description,
 			"inputSchema": input_schema,
 			"x_category": category,
 			"x_group": group
