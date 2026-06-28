@@ -24,6 +24,7 @@ var _allow_remote_check: CheckBox = null
 var _cors_origin_edit: LineEdit = null
 var _rate_limit_spin: SpinBox = null
 var _connection_info_label: Label = null
+var _copy_connection_url_button: Button = null
 
 var _transport_title_label: Label = null
 var _transport_mode_label: Label = null
@@ -140,6 +141,12 @@ func _create_status_bar() -> HBoxContainer:
 	_connection_info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_connection_info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bar.add_child(_connection_info_label)
+
+	_copy_connection_url_button = Button.new()
+	_copy_connection_url_button.text = _tr("ui.copy_url")
+	_copy_connection_url_button.pressed.connect(_copy_connection_url_to_clipboard)
+	_copy_connection_url_button.visible = false
+	bar.add_child(_copy_connection_url_button)
 
 	_start_button = Button.new()
 	_start_button.text = _tr("ui.start_server")
@@ -448,18 +455,7 @@ func _update_ui_state() -> void:
 		_auth_token_edit.editable = auth_on and not is_running
 
 	if _connection_info_label:
-		var mode: String = "stdio"
-		if _plugin and _plugin.get("transport_mode") != null:
-			mode = _plugin.transport_mode
-		if mode == "http" and is_running:
-			var port: int = 9080
-			if _plugin and _plugin.get("http_port") != null:
-				port = _plugin.http_port
-			_connection_info_label.text = _trf("ui.connection_url", [port])
-		elif mode == "stdio" and is_running:
-			_connection_info_label.text = _tr("ui.connection_stdio")
-		else:
-			_connection_info_label.text = ""
+		_update_connection_info()
 
 func _set_controls_disabled(container: Container, disabled: bool) -> void:
 	for child in container.get_children():
@@ -717,6 +713,8 @@ func _refresh_translations() -> void:
 		_refresh_tools_button.text = _tr("ui.refresh_tools")
 	if _open_log_button:
 		_open_log_button.text = _tr("ui.open_log")
+	if _copy_connection_url_button:
+		_copy_connection_url_button.text = _tr("ui.copy_url")
 	if _language_option:
 		var current_locale: String = _translation_manager.get_locale() if _translation_manager else "en"
 		var locales: Array = _translation_manager.get_available_locales() if _translation_manager else ["en", "zh"]
@@ -747,11 +745,28 @@ func _update_connection_info() -> void:
 		var port: int = 9080
 		if _plugin and _plugin.get("http_port") != null:
 			port = _plugin.http_port
-		_connection_info_label.text = _tr("ui.connection_url") % [port]
+		_connection_info_label.text = _trf("ui.connection_url", [port])
+		if _copy_connection_url_button:
+			_copy_connection_url_button.visible = true
 	elif mode == "stdio" and is_running:
 		_connection_info_label.text = _tr("ui.connection_stdio")
+		if _copy_connection_url_button:
+			_copy_connection_url_button.visible = false
 	else:
 		_connection_info_label.text = ""
+		if _copy_connection_url_button:
+			_copy_connection_url_button.visible = false
+
+func _get_connection_url() -> String:
+	var port: int = 9080
+	if _plugin and _plugin.get("http_port") != null:
+		port = _plugin.http_port
+	return "http://localhost:%d/mcp" % [port]
+
+func _copy_connection_url_to_clipboard() -> void:
+	if not _copy_connection_url_button or not _copy_connection_url_button.visible:
+		return
+	DisplayServer.clipboard_set(_get_connection_url())
 
 func _load_settings() -> void:
 	if not _settings_manager:

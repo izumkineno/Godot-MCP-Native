@@ -32,3 +32,4 @@ ui.enabled_format,Enabled: %d / %d,Enabled: %d / %d,已启用：%d / %d
 ui.connection_url,URL: http://localhost:%d/mcp,URL: http://localhost:%d/mcp,地址：http://localhost:%d/mcp
 ui.connection_stdio,Mode: stdio (via stdin/stdout),Mode: stdio (via stdin/stdout),模式：stdio（标准输入/输出）
 ui.tools_init,Tools: 0,Tools: 0,工具：0
+ui.copy_url,Copy URL,Copy URL,复制 URL
