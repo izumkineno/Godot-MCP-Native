@@ -13,6 +13,7 @@ func register_tools(server_core: RefCounted) -> void:
 	_register_group_guide(server_core, "script")
 	_register_group_guide(server_core, "editor")
 	_register_group_guide(server_core, "debug")
+	_register_group_guide(server_core, "project")
 
 # ============================================================================
 # 分组定义数据（集中维护）
@@ -118,13 +119,8 @@ static func _get_group_definitions() -> Array[Dictionary]:
 				{
 					"name": "Editor-Advanced",
 					"tools": ["get_selected_nodes", "select_node", "select_file", "get_inspector_properties", "set_editor_setting", "get_editor_screenshot", "get_signals", "reload_project", "list_export_presets", "inspect_export_templates", "validate_export_preset", "run_export"],
-					"workflow": "select_node before update_node_property; reload_project after external file changes.",
-				{
-					"name": "Editor-Advanced",
-					"tools": ["get_selected_nodes", "select_node", "select_file", "get_inspector_properties", "set_editor_setting", "get_editor_screenshot", "get_signals", "reload_project", "list_export_presets", "inspect_export_templates", "validate_export_preset", "run_export", "execute_editor_script"],
 					"workflow": "select_node before update_node_property; reload_project after external file changes; execute_editor_script for multi-line GDScript in editor context.",
 					"rule": "Use get_inspector_properties to list available properties before calling update_node_property."
-				}
 				}
 			],
 			"cross_refs": ["scene → to open/close scenes", "debug → to run and debug the project"]

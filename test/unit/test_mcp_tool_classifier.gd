@@ -11,9 +11,9 @@ func after_each():
 func test_classifier_initializes():
 	assert_ne(_classifier, null, "Classifier should initialize")
 
-func test_all_156_tools_registered():
+func test_all_163_tools_registered():
 	var all_tools: Array = _classifier.get_all_tools()
-	assert_eq(all_tools.size(), 156, "Should have exactly 156 tools registered")
+	assert_eq(all_tools.size(), 163, "Should have exactly 163 tools registered")
 
 func test_core_tools_count_within_limit():
 	var core_tools: Array = _classifier.get_core_tools()
@@ -21,7 +21,7 @@ func test_core_tools_count_within_limit():
 
 func test_supplementary_tools_count():
 	var supp_tools: Array = _classifier.get_supplementary_tools()
-	assert_eq(supp_tools.size(), 126, "Should have 126 supplementary tools")
+	assert_eq(supp_tools.size(), 133, "Should have 133 supplementary tools")
 
 func test_get_tool_category_mcp_start_here():
 	var cat: String = _classifier.get_tool_category("mcp_start_here")

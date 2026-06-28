@@ -13,14 +13,14 @@ A powerful Godot Engine plugin that integrates AI assistants (Claude, etc.) via 
 - **Full Project Access**: AI assistants can read and modify scripts, scenes, nodes, and resources
 - **Native Implementation**: No Node.js dependency required - runs entirely within Godot
 - **Real-time Editing**: Apply AI suggestions directly in the editor
-- **Comprehensive Tool Set** (156 tools — 30 core + 126 supplementary):
+- **Comprehensive Tool Set** (163 tools — 30 core + 133 supplementary):
   - **Node Tools** (9 core + 11 advanced): Create, modify, manage scene nodes, duplicate, move, rename, signal connections, anchor presets, group management, batch operations, scene auditing
   - **Script Tools** (7 core + 8 advanced): Edit, analyze, create, attach, validate GDScript and C# files, execute scripts, search in files, symbol indexing, definition & reference lookup
   - **Scene Tools** (4 core + 4 advanced): Manipulate scene structure, save scenes, list/open/close scene tabs, project scene listing
   - **Editor Tools** (4 core + 12 advanced): Control editor functionality, screenshot, signal inspection, filesystem reload, node/file selection, export management, property inspector
   - **Debug Tools** (3 core + 68 advanced): Logging, debugger sessions, breakpoints, stack/variable inspection, profilers, runtime probe, animation/audio/shader/tilemap runtime control, debug execution control, await_scene_ready
   - **Project Tools** (3 core + 23 advanced): Access project settings, list resources, create resources, run tests, manage input mappings, inspect autoloads/global classes, resource diagnostics & health audit
-  - **Guide Tools** (1 supplementary): `mcp_start_here` gives agents a first-read guide for choosing development, debugging, runtime, and health tools
+  - **Guide Tools** (7 supplementary): `mcp_start_here`, `list_groups`, and per-group guides (`node_guide`, `scene_guide`, `script_guide`, `editor_guide`, `debug_guide`, `project_guide`) help agents quickly choose the right workflow
 
 ## 📦 Installation
 
@@ -365,6 +365,16 @@ Implement a day/night cycle system with dynamic lighting
 - `scan-cyclic-resource-dependencies` - Find cyclic dependency chains
 - `detect-broken-scripts` - Scan scripts for syntax errors
 - `audit-project-health` - Run a project health audit
+
+### Guide (7 supplementary)
+- `mcp_start_here` - Read first guide for selecting development, debugging, runtime helpers, and project health checks
+- `list_groups` - List all tool groups and their guide tools
+- `node_guide` - Guide for node creation, editing, groups, signals, and scene audits
+- `scene_guide` - Guide for opening, saving, listing, and closing scenes
+- `script_guide` - Guide for reading, creating, modifying, analyzing, and searching scripts
+- `editor_guide` - Guide for editor state, selection, export, and execution tools
+- `debug_guide` - Guide for debugging, runtime inspection, and probe-based workflows
+- `project_guide` - Guide for project settings, resources, tests, imports, and health checks
 
 ## 🔒 Security Recommendations
 

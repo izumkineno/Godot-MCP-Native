@@ -11,6 +11,13 @@ func _init() -> void:
 func _build_classifications() -> void:
 	var classifications: Array[Dictionary] = [
 		{"name": "mcp_start_here", "category": "supplementary", "group": "Guide"},
+		{"name": "list_groups", "category": "supplementary", "group": "Guide"},
+		{"name": "node_guide", "category": "supplementary", "group": "Guide"},
+		{"name": "scene_guide", "category": "supplementary", "group": "Guide"},
+		{"name": "script_guide", "category": "supplementary", "group": "Guide"},
+		{"name": "editor_guide", "category": "supplementary", "group": "Guide"},
+		{"name": "debug_guide", "category": "supplementary", "group": "Guide"},
+		{"name": "project_guide", "category": "supplementary", "group": "Guide"},
 		{"name": "create_node", "category": "core", "group": "Node-Write"},
 		{"name": "delete_node", "category": "core", "group": "Node-Write"},
 		{"name": "update_node_property", "category": "core", "group": "Node-Write"},

@@ -34,7 +34,7 @@ func register_tools(server_core: RefCounted) -> void:
 func _register_create_node(server_core: RefCounted) -> void:
 	server_core.register_tool(
 		"create_node",
-		"Create a new node in the Godot scene tree. Returns the node path and type. Call node_guide first for usage rules and workflow order."
+		"Create a new node in the Godot scene tree. Returns the node path and type. Call node_guide first for usage rules and workflow order.",
 		{
 			"type": "object",
 			"properties": {

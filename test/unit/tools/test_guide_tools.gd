@@ -17,6 +17,11 @@ func test_register_tools_adds_guide_tool():
 	_guide_tools.register_tools(server_core)
 	assert_true(server_core.has_tool("mcp_start_here"), "Guide tool should be registered")
 
+func test_register_tools_adds_project_guide_tool():
+	var server_core: RefCounted = load("res://addons/godot_mcp/native_mcp/mcp_server_core.gd").new()
+	_guide_tools.register_tools(server_core)
+	assert_true(server_core.has_tool("project_guide"), "Project guide should be registered")
+
 func test_guide_tool_overview_contains_tool_selection_and_debug_sections():
 	var result: Dictionary = _guide_tools._tool_mcp_start_here({})
 	assert_true(result.has("topic"), "Guide tool result should include topic")
@@ -53,3 +58,19 @@ func test_guide_tool_task_infers_debugging():
 func test_guide_tool_unknown_topic_returns_error():
 	var result: Dictionary = _guide_tools._tool_mcp_start_here({"topic": "unknown"})
 	assert_true(result.has("error"), "Unknown topic should return an error")
+
+func test_editor_advanced_group_includes_execute_editor_script():
+	var definitions: Array = _guide_tools._get_group_definitions()
+	var found_group: bool = false
+	for definition in definitions:
+		if definition.get("name", "") != "editor":
+			continue
+		for subgroup in definition.get("subgroups", []):
+			if subgroup.get("name", "") != "Editor-Advanced":
+				continue
+			found_group = true
+			var tools: Array = subgroup.get("tools", [])
+			assert_true("execute_editor_script" in tools, "Editor-Advanced should include execute_editor_script")
+			assert_eq(tools.count("execute_editor_script"), 1, "execute_editor_script should appear only once")
+			break
+	assert_true(found_group, "Editor group should expose Editor-Advanced subgroup")

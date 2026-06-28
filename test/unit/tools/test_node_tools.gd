@@ -15,6 +15,10 @@ func test_create_node_schema():
 	}
 	assert_true(tool.is_valid() or tool.name == "create_node", "create_node schema should be valid")
 
+func test_create_node_tool_script_loads_after_register_block_fix():
+	var tool = load("res://addons/godot_mcp/tools/node_tools_native.gd").new()
+	assert_true(tool.has_method("_tool_create_node"), "node tools script should load and expose _tool_create_node")
+
 func test_delete_node_schema():
 	var tool: MCPTypes.MCPTool = MCPTypes.MCPTool.new()
 	tool.name = "delete_node"
