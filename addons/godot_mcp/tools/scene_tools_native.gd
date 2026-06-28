@@ -367,7 +367,7 @@ func _tool_open_scene(params: Dictionary) -> Dictionary:
 
 func _register_get_current_scene(server_core: RefCounted) -> void:
 	var tool_name: String = "get_current_scene"
-	var description: String = "Get information about the currently open scene, including name, path, and root node type."
+	var description: String = "Get information about the currently open scene, including name, path, and root node type. Call scene_guide first for usage rules and workflow order."
 	
 	# inputSchema
 	var input_schema: Dictionary = {

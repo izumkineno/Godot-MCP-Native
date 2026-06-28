@@ -54,7 +54,7 @@ func register_tools(server_core: RefCounted) -> void:
 
 func _register_list_project_scripts(server_core: RefCounted) -> void:
 	var tool_name: String = "list_project_scripts"
-	var description: String = "List all GDScript (.gd) and C# (.cs) script files in the project. Returns paths relative to res://."
+	var description: String = "List all GDScript (.gd) and C# (.cs) script files in the project. Returns paths relative to res://. Call script_guide first for usage rules and workflow order."
 	
 	# inputSchema
 	var input_schema: Dictionary = {

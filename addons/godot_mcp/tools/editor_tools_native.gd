@@ -124,7 +124,7 @@ func register_tools(server_core: RefCounted) -> void:
 
 func _register_get_editor_state(server_core: RefCounted) -> void:
 	var tool_name: String = "get_editor_state"
-	var description: String = "Get the current state of the Godot editor, including active scene and selection info."
+	var description: String = "Get the current state of the Godot editor, including active scene and selection info. Call editor_guide first for usage rules and workflow order."
 	
 	# inputSchema
 	var input_schema: Dictionary = {

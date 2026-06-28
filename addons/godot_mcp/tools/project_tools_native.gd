@@ -56,7 +56,7 @@ func register_tools(server_core: RefCounted) -> void:
 
 func _register_get_project_info(server_core: RefCounted) -> void:
 	var tool_name: String = "get_project_info"
-	var description: String = "Get general information about the Godot project, including name, version, and description."
+	var description: String = "Get general information about the Godot project, including name, version, and description. Call project_guide first for usage rules and workflow order."
 	
 	# inputSchema
 	var input_schema: Dictionary = {

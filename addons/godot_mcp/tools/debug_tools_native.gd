@@ -160,7 +160,7 @@ func _on_log_message(level: String, message: String) -> void:
 
 func _register_get_editor_logs(server_core: RefCounted) -> void:
 	var tool_name: String = "get_editor_logs"
-	var description: String = "Get recent log messages from the editor or runtime. Supports filtering by source, type, and pagination."
+	var description: String = "Get recent log messages from the editor or runtime. Supports filtering by source, type, and pagination. Call debug_guide first for usage rules and workflow order."
 
 	var input_schema: Dictionary = {
 		"type": "object",

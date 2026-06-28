@@ -22,6 +22,7 @@ func test_guide_tool_overview_contains_tool_selection_and_debug_sections():
 	assert_true(result.has("topic"), "Guide tool result should include topic")
 	assert_eq(result["topic"], "overview", "Default topic should be overview")
 	assert_eq(result.get("recommended_section", ""), "overview", "Overview should recommend the overview route")
+	assert_true(result.has("next_steps"), "Guide tool result should include next steps")
 	assert_true(result.has("sections"), "Guide tool result should include sections")
 	var sections: Array = result["sections"]
 	assert_true(sections.size() >= 4, "Guide tool should return multiple guide sections")
@@ -32,7 +33,8 @@ func test_guide_tool_overview_contains_tool_selection_and_debug_sections():
 	assert_true("debugging" in section_names, "Guide tool should include debugging guidance")
 	assert_true("runtime" in section_names, "Guide tool should include runtime guidance")
 	assert_true("health" in section_names, "Guide tool should include health guidance")
-	assert_true(str(result.get("summary", "")).contains("development tools"), "Overview summary should explain the development route")
+	assert_true(str(result.get("summary", "")).contains("Start here before using any other tool"), "Overview summary should explain the first-read guide")
+	assert_true(str(result.get("next_steps", [])[0]).contains("Read the overview first"), "Overview should tell agents to read the guide first")
 
 func test_guide_tool_topic_filters_sections():
 	var result: Dictionary = _guide_tools._tool_mcp_start_here({"topic": "debugging"})
