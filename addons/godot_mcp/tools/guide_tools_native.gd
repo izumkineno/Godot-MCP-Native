@@ -350,14 +350,14 @@ func _tool_group_guide(params: Dictionary, group_def: Dictionary) -> Dictionary:
 
 func _register_mcp_start_here(server_core: RefCounted) -> void:
 	var tool_name: String = "mcp_start_here"
-	var description: String = "Read first guide for selecting development, debugging, runtime helpers, and project health checks. Use 'list_groups' for per-group guides."
+	var description: String = "Read first guide for selecting development, debugging, runtime helpers, scene, node, script, and project health checks. Use 'list_groups' for per-group guides."
 	var input_schema: Dictionary = {
 		"type": "object",
 		"properties": {
 			"topic": {
 				"type": "string",
-				"enum": ["overview", "development", "debugging", "runtime", "health"],
-				"description": "Optional section to return. Use overview, development, debugging, runtime, or health."
+				"enum": ["overview", "development", "debugging", "runtime", "health", "scene", "node", "script"],
+				"description": "Optional section to return. Use overview, development, debugging, runtime, health, scene, node, or script."
 			},
 			"task": {
 				"type": "string",
@@ -365,7 +365,7 @@ func _register_mcp_start_here(server_core: RefCounted) -> void:
 			},
 			"group": {
 				"type": "string",
-				"description": "Optional group name for per-group guide (node, scene, script, editor, debug, project). Overrides topic/task."
+				"description": "Optional group name for per-group guide (node, scene, script, editor, debug, project, guide). Overrides topic/task."
 			}
 		}
 	}
@@ -465,7 +465,8 @@ func _build_sections() -> Array[Dictionary]:
 				"get_project_info",
 				"get_project_settings"
 			],
-			"selection_rule": "Start with the smallest read-only tool that tells you where the change belongs, then move to the specific write tool."
+			"selection_rule": "Start with the smallest read-only tool that tells you where the change belongs, then move to the specific write tool.",
+			"short_path": "get_editor_state -> get_current_scene or get_current_script -> read_script or list_nodes -> specific write tool"
 		},
 		{
 			"name": "debugging",
@@ -473,27 +474,33 @@ func _build_sections() -> Array[Dictionary]:
 			"priority": 2,
 			"when_to_read": "Use this when something behaves incorrectly and you need to inspect runtime state.",
 			"recommended_tools": [
-				"get_editor_logs",
 				"run_project",
 				"get_debugger_sessions",
-				"install_runtime_probe",
+				"get_debug_threads",
 				"get_debug_stack_frames",
 				"get_debug_stack_variables",
 				"get_debug_variables",
 				"get_debug_output",
 				"await_debugger_state",
 				"debug_continue_and_wait",
-				"debug_step_over_and_wait"
+				"debug_step_over_and_wait",
+				"request_debug_break"
 			],
-			"selection_rule": "Confirm the current runtime state before stepping or mutating anything."
+			"selection_rule": "Confirm the current runtime state before stepping or mutating anything. Treat real debugger stacks as the primary evidence and manual breaks as a fallback only.",
+			"short_path": "run_project -> get_debugger_sessions -> get_debug_threads -> get_debug_stack_frames -> get_debug_stack_variables"
 		},
 		{
 			"name": "runtime",
 			"title": "Runtime helpers",
 			"priority": 3,
-			"when_to_read": "Use this when you need runtime animation, audio, shader, tilemap, or screenshot tooling.",
+			"when_to_read": "Use this when you need runtime animation, audio, shader, tilemap, or screenshot tooling after confirming the project is already running.",
 			"recommended_tools": [
 				"get_runtime_info",
+				"get_runtime_scene_tree",
+				"inspect_runtime_node",
+				"update_runtime_node_property",
+				"call_runtime_node_method",
+				"evaluate_runtime_expression",
 				"get_runtime_screenshot",
 				"list_runtime_animations",
 				"play_runtime_animation",
@@ -502,32 +509,96 @@ func _build_sections() -> Array[Dictionary]:
 				"list_runtime_audio_buses",
 				"update_runtime_audio_bus",
 				"list_runtime_tilemap_layers",
-				"set_runtime_tilemap_cell"
+				"set_runtime_tilemap_cell",
+				"simulate_runtime_input_action",
+				"await_runtime_condition",
+				"assert_runtime_condition"
 			],
-			"selection_rule": "Use runtime helpers after you have confirmed the project is in the right state."
+			"selection_rule": "Use runtime helpers after you have confirmed the project is in the right state. Prefer read-only state checks before mutating runtime data.",
+			"short_path": "get_runtime_info -> get_runtime_scene_tree -> inspect_runtime_node -> targeted runtime write or input tool"
 		},
 		{
 			"name": "health",
 			"title": "Project health checks",
 			"priority": 4,
-			"when_to_read": "Use this when the project may have broken scripts, missing resources, or import issues.",
+			"when_to_read": "Use this when the project may have broken scripts, missing resources, or import issues. Start with the lightest check that can prove the issue.",
 			"recommended_tools": [
-				"audit_project_health",
 				"detect_broken_scripts",
 				"scan_missing_resource_dependencies",
 				"scan_cyclic_resource_dependencies",
-				"fix_resource_uid",
-				"get_resource_uid_info",
 				"get_import_metadata",
-				"reimport_resources"
+				"get_resource_uid_info",
+				"fix_resource_uid",
+				"reimport_resources",
+				"audit_project_health"
 			],
-			"selection_rule": "Run the lightest diagnostic that can confirm the suspected problem before deeper scans."
+			"selection_rule": "Run the lightest diagnostic that can confirm the suspected problem before deeper scans.",
+			"short_path": "detect_broken_scripts -> scan_missing_resource_dependencies -> scan_cyclic_resource_dependencies -> audit_project_health"
+		},
+		{
+			"name": "scene",
+			"title": "Scene tools",
+			"priority": 5,
+			"when_to_read": "Use this when opening, saving, or inspecting scenes.",
+			"recommended_tools": [
+				"list_project_scenes",
+				"open_scene",
+				"get_current_scene",
+				"get_scene_structure",
+				"save_scene",
+				"list_open_scenes",
+				"close_scene_tab"
+			],
+			"selection_rule": "Use the scene tools to confirm the active scene before editing nodes or scripts.",
+			"short_path": "list_project_scenes -> open_scene -> get_current_scene -> get_scene_structure -> save_scene"
+		},
+		{
+			"name": "node",
+			"title": "Node tools",
+			"priority": 6,
+			"when_to_read": "Use this when creating, deleting, or modifying scene nodes and their properties.",
+			"recommended_tools": [
+				"get_scene_tree",
+				"list_nodes",
+				"get_node_properties",
+				"create_node",
+				"update_node_property",
+				"batch_update_node_properties",
+				"move_node",
+				"rename_node",
+				"connect_signal",
+				"set_node_groups"
+			],
+			"selection_rule": "Confirm the target node or scene path before making edits, then prefer batch updates when changing more than one property.",
+			"short_path": "get_scene_tree -> list_nodes -> get_node_properties -> create_node or update_node_property"
+		},
+		{
+			"name": "script",
+			"title": "Script tools",
+			"priority": 7,
+			"when_to_read": "Use this when reading, creating, modifying, analyzing, or searching scripts.",
+			"recommended_tools": [
+				"list_project_scripts",
+				"search_in_files",
+				"read_script",
+				"get_current_script",
+				"create_script",
+				"modify_script",
+				"validate_script",
+				"analyze_script",
+				"list_project_script_symbols",
+				"find_script_symbol_definition",
+				"find_script_symbol_references",
+				"open_script_at_line"
+			],
+			"selection_rule": "Read before you write, and validate after every script change.",
+			"short_path": "list_project_scripts -> read_script or search_in_files -> modify_script -> validate_script"
 		}
 	]
 
 func _build_summary(topic: String, sections: Array[Dictionary], recommended_section: String, task: String) -> String:
 	if topic == "overview":
-		var base_summary: String = "Start here before using any other tool. Use this first to route feature work to development tools, runtime failures to debugging tools, play-mode helpers to runtime tools, and broken imports or scripts to health tools."
+		var base_summary: String = "Start here before using any other tool. Use this first to route feature work to development tools, runtime failures to debugging tools, play-mode helpers to runtime tools, broken imports or scripts to health tools, and scene/node/script work to their shortest read-then-write path."
 		if not task.is_empty():
 			return base_summary + " Suggested section: " + recommended_section + "."
 		return base_summary
@@ -535,6 +606,9 @@ func _build_summary(topic: String, sections: Array[Dictionary], recommended_sect
 		if section.get("name", "") == topic:
 			var selection_rule: String = str(section.get("selection_rule", ""))
 			var title: String = str(section.get("title", topic))
+			var short_path: String = str(section.get("short_path", ""))
+			if not short_path.is_empty():
+				return title + ": " + selection_rule + " Short path: " + short_path + "."
 			return title + ": " + selection_rule
 	return ""
 
@@ -542,12 +616,17 @@ func _build_next_steps(topic: String, sections: Array[Dictionary], recommended_s
 	var next_steps: Array[String] = []
 	if topic == "overview":
 		next_steps.append("Read the overview first.")
-		next_steps.append("Pick the recommended section before calling a specialized tool.")
+		next_steps.append("If debugging, run_project first, then get_debugger_sessions, then get_debug_threads, then get_debug_stack_frames.")
+		next_steps.append("If the project is already running, use get_runtime_info before runtime helpers.")
 		next_steps.append("For per-group guidance, call list_groups or use mcp_start_here with group= parameter.")
 		for section in sections:
 			var section_name: String = str(section.get("name", ""))
 			if not section_name.is_empty():
-				next_steps.append("Use " + section_name + " tools only after confirming the task fits that section.")
+				var short_path: String = str(section.get("short_path", ""))
+				if not short_path.is_empty():
+					next_steps.append(section_name + ": " + short_path)
+				else:
+					next_steps.append("Use " + section_name + " tools only after confirming the task fits that section.")
 		return next_steps
 	next_steps.append("Use the " + topic + " section for this task.")
 	next_steps.append("Return to overview if the task changes or becomes unclear.")
@@ -565,7 +644,13 @@ func _infer_topic_from_task(task: String) -> String:
 		return "runtime"
 	if _contains_any(normalized, ["health", "broken", "missing", "dependency", "uid", "import", "reimport", "audit"]):
 		return "health"
-	if _contains_any(normalized, ["scene", "node", "script", "tool", "feature", "edit", "modify", "create", "refactor", "build"]):
+	if _contains_any(normalized, ["scene tree", "current scene", "open scene", "save scene", "scene tab"]):
+		return "scene"
+	if _contains_any(normalized, ["node", "nodes", "property", "signal", "group", "anchor", "tree"]):
+		return "node"
+	if _contains_any(normalized, ["script", "gdscript", "c#", "symbol", "class_name", "function", "method", "analyze", "validate", "read", "write"]):
+		return "script"
+	if _contains_any(normalized, ["tool", "feature", "edit", "modify", "create", "refactor", "build"]):
 		return "development"
 	return "development"
 
