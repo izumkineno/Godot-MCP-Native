@@ -417,19 +417,27 @@ func _handle_tool_call(message: Dictionary) -> Dictionary:
 	# 发送开始信号
 	tool_execution_started.emit(tool_name, arguments)
 	
+	# 工具注册后对象可能被释放，先做一次显式校验，避免 await 调用落到无效 Callable。
+	if not tool.callable.is_valid():
+		var invalid_callable_error: String = "Tool callable is invalid: " + tool_name
+		_log_error(invalid_callable_error)
+		tool_execution_failed.emit(tool_name, invalid_callable_error)
+		var invalid_callable_result: Dictionary = {
+			"content": [{
+				"type": "text",
+				"text": invalid_callable_error
+			}],
+			"isError": true
+		}
+		_append_tool_log(tool_name, null, invalid_callable_error)
+		return MCPTypes.create_response(id, invalid_callable_result)
+
 	# 执行工具
-	var result: Variant = null
+	var result: Variant = await tool.callable.call(arguments)
 	var error: String = ""
-	
-	if tool.callable.is_valid():
-		# 使用Callable调用工具（await 支持异步工具执行）
-		var status: Error = OK
-		
-		# 捕获执行错误
-		if status == OK:
-			result = await tool.callable.call(arguments)
-		else:
-			error = "Tool execution failed with error: " + str(status)
+	# 工具层广泛使用 {"error": ...} 作为失败约定，这里统一提升为 MCP error result。
+	if result is Dictionary and result.has("error"):
+		error = str(result.get("error", "Tool execution failed"))
 	
 	# 处理执行结果
 	if not error.is_empty():
@@ -442,19 +450,21 @@ func _handle_tool_call(message: Dictionary) -> Dictionary:
 			}],
 			"isError": true
 		}
+		# 失败时仍保留 structuredContent，方便客户端继续消费结构化错误上下文。
+		if result is Dictionary:
+			error_result["structuredContent"] = result
+		_append_tool_log(tool_name, result, error)
 		return MCPTypes.create_response(id, error_result)
 	
-	var has_error: bool = result is Dictionary and result.has("error")
-
 	var response_result: Dictionary = {
 		"content": [{
 			"type": "text",
 			"text": JSON.stringify(result)
 		}],
-		"isError": has_error
+		"isError": false
 	}
 
-	if not has_error and tool.output_schema.size() > 0:
+	if tool.output_schema.size() > 0:
 		response_result["structuredContent"] = result
 	
 	var response: Dictionary = MCPTypes.create_response(id, response_result)

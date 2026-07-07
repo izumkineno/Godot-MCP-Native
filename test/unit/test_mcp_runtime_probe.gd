@@ -133,3 +133,8 @@ func test_serialize_animation_state_not_playing():
 	assert_eq(result["current_animation"], "", "current_animation should be empty")
 	remove_child(anim_player)
 	anim_player.queue_free()
+
+func test_handle_delete_node_rejects_probe_self():
+	var result: bool = _probe._handle_delete_node([str(_probe.get_path())])
+	assert_eq(result, true, "delete handler should return true after handling the request")
+	assert_false(_probe.is_queued_for_deletion(), "probe should not be queued for deletion")
